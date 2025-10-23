@@ -321,7 +321,13 @@ pub fn parse_markdown(
             pulldown_cmark::Event::TaskListMarker(checked) => {
                 events.push((range, MarkdownEvent::TaskListMarker(checked)))
             }
-            pulldown_cmark::Event::InlineMath(_) | pulldown_cmark::Event::DisplayMath(_) => {}
+
+            pulldown_cmark::Event::InlineMath(math) => {
+                events.push((range, MarkdownEvent::InlineMath(math.to_string())))
+            }
+            pulldown_cmark::Event::DisplayMath(math) => {
+                events.push((range, MarkdownEvent::DisplayMath(math.to_string())))
+            }
         }
     }
     (events, language_names, language_paths)
@@ -397,6 +403,8 @@ pub enum MarkdownEvent {
     Rule,
     /// A task list marker, rendered as a checkbox in HTML. Contains a true when it is checked.
     TaskListMarker(bool),
+    InlineMath(String),
+    DisplayMath(String),
 }
 
 /// Tags for elements that can contain other elements.
@@ -547,7 +555,7 @@ mod tests {
     use super::*;
 
     const UNWANTED_OPTIONS: Options = Options::ENABLE_YAML_STYLE_METADATA_BLOCKS
-        .union(Options::ENABLE_MATH)
+        // .union(Options::ENABLE_MATH)
         .union(Options::ENABLE_DEFINITION_LIST);
 
     #[test]
